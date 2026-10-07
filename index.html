@@ -51,7 +51,7 @@ document.querySelectorAll('.c').forEach(e=>e.onclick=()=>openT(e.dataset.p));}
 async function loadContacts(){try{contacts=await A('api=contacts');renderList()}catch(e){}}
 function tick(s){if(!s)return'<span class="tk">🕓</span>';if(s==='failed')return'<span class="tk failed">⚠ נכשל</span>';return`<span class="tk ${s}">${s==='sent'?'✓':'✓✓'}</span>`}
 function imgErr(e){const d=document.createElement('div');d.className='it';d.textContent='[תמונה]';e.replaceWith(d)}
-function body(m){let h='';const media=m.media_id?API+`?k=${encodeURIComponent(K)}&api=media&id=${m.media_id}`:m.media;
+function body(m){let h='';const media=m.media_id?API+`?k=${encodeURIComponent(K)}&api=media&id=${m.media_id}`:m.out_ref?API+`?k=${encodeURIComponent(K)}&api=out-media&ref=${encodeURIComponent(m.out_ref)}`:m.media;
 if(m.type==='image'||m.type==='sticker'){h+=media?`<img loading="lazy" src="${esc(media)}" onclick="window.open(this.src)" onerror="imgErr(this)"/>`:'<div class="it">[תמונה]</div>'}
 else if(m.type==='audio'||m.type==='voice'){if(!m.text)h+='<div class="it">[הודעה קולית]</div>';else h+='<div class="it">🎤 תמלול:</div>'}
 else if(m.type&&!['text','button','interactive','reaction'].includes(m.type)&&!m.text)h+=`<div class="it">[${TYPES[m.type]||m.type}]</div>`;
