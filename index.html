@@ -70,5 +70,5 @@ for(const m of d.msgs){const k=dkey(m.at);if(k!==ld){h+=`<div class="ds"><span>$
 h+=`<div class="row"><div class="b ${m.dir}">${body(m)}<div class="meta">${m.dir==='out'?tick(m.status)+' ':''}${hm(m.at)}${m.pending?' · ממתין לתשובה':''}</div></div></div>`}
 ch.innerHTML=h||'<div class="ds"><span>אין הודעות</span></div>';if(!keep||atBottom)ch.scrollTop=ch.scrollHeight}
 document.getElementById('search').oninput=renderList;document.getElementById('back').onclick=()=>{document.body.classList.remove('open');cur=null;renderList()};
-loadContacts().then(()=>{const o=new URLSearchParams(location.search).get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},15000);
+loadContacts().then(()=>{const o=new URLSearchParams(location.search).get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},30000);
 </script></body></html>
