@@ -26,12 +26,15 @@
 #info{background:#fff;font-size:13px;color:#3b4a54;padding:6px 16px;border-bottom:1px solid #e9edef;display:none}
 #back{display:none;background:none;border:0;font-size:22px;cursor:pointer;color:#54656f}
 #empty{flex:1;display:flex;align-items:center;justify-content:center;color:#667781;font-size:15px;background:#f0f2f5;flex-direction:column;gap:8px}
+#cmp{display:none;background:#f0f2f5;padding:8px 12px;gap:8px;align-items:flex-end}#cmp textarea{flex:1;resize:none;border:0;border-radius:8px;padding:9px 12px;font:15px Segoe UI,Helvetica,Arial,sans-serif;max-height:140px;min-height:40px;outline:none;direction:rtl}
+#sendb{width:42px;height:42px;border-radius:50%;border:0;background:#00a884;color:#fff;font-size:18px;cursor:pointer;flex:none}#sendb:disabled{background:#8696a0;cursor:default}
+#cerr{display:none;background:#fde8e8;color:#b3261e;font-size:13px;padding:6px 14px}.mn{font-size:11px;color:#00796b;margin-bottom:2px}
 @media(max-width:760px){#side{width:100%;min-width:0}#main{display:none;width:100%}body.open #side{display:none}body.open #main{display:flex}#back{display:block}.b{max-width:85%}#chat{padding:12px 10px}}
 </style></head><body><div id="app">
 <div id="side"><div class="hdr">💬 אנטולי · כל השיחות</div><input id="search" placeholder="חיפוש לפי שם או מספר"/><div id="list"></div></div>
-<div id="main"><div id="empty"><div style="font-size:40px">💬</div>בחר שיחה מהרשימה<div style="font-size:12px">תצוגה בלבד. מתעדכן אוטומטית כל 30 שניות</div></div>
+<div id="main"><div id="empty"><div style="font-size:40px">💬</div>בחר שיחה מהרשימה<div style="font-size:12px">אפשר לכתוב לתלמיד מתוך השיחה. מתעדכן אוטומטית כל 30 שניות</div></div>
 <div class="hdr" id="th" style="display:none"><button id="back">→</button><div class="av" id="tav"></div><div><div id="tn"></div><div class="ph" id="tp"></div></div></div>
-<div id="info"></div><div id="chat" style="display:none"></div></div></div>
+<div id="info"></div><div id="chat" style="display:none"></div><div id="cerr"></div><div id="cmp"><textarea id="ctext" rows="1" placeholder="כתוב הודעה לתלמיד (תישלח מהמספר של אנטולי)"></textarea><button id="sendb" title="שלח">➤</button></div></div></div>
 <script>
 const K=new URLSearchParams(location.search).get('k');const API='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/chat-viewer';const A=(q)=>fetch(API+'?k='+encodeURIComponent(K)+'&'+q).then(r=>r.json());
 const TZ='Asia/Jerusalem';let contacts=[],cur=null,lastSig='';
@@ -56,10 +59,10 @@ if(m.type==='image'||m.type==='sticker'){h+=media?`<img loading="lazy" src="${es
 else if(m.type==='audio'||m.type==='voice'){if(!m.text)h+='<div class="it">[הודעה קולית]</div>';else h+='<div class="it">🎤 תמלול:</div>'}
 else if(m.type&&!['text','button','interactive','reaction'].includes(m.type)&&!m.text)h+=`<div class="it">[${TYPES[m.type]||m.type}]</div>`;
 if(m.type==='reaction')h+='תגובה: ';if(m.text)h+=esc(m.text);return h}
-async function openT(p,keep){if(!keep){cur=p;lastSig='';document.body.classList.add('open');renderList()}
+async function openT(p,keep){if(!keep){if(cur!==p){showErr('');ta.value=''}cur=p;lastSig='';document.body.classList.add('open');renderList()}
 const d=await A('api=thread&phone='+p);if(cur!==p)return;const sig=JSON.stringify(d.msgs.map(m=>[m.at,m.status]))+JSON.stringify(d.score)+d.feedback.length;if(sig===lastSig)return;lastSig=sig;
 const c=contacts.find(x=>x.phone===p)||{};const nm=c.name||d.conv?.name||fmtPhone(p);
-document.getElementById('empty').style.display='none';['th','chat'].forEach(i=>document.getElementById(i).style.display='flex');document.getElementById('chat').style.display='block';
+document.getElementById('empty').style.display='none';['th','chat','cmp'].forEach(i=>document.getElementById(i).style.display='flex');document.getElementById('chat').style.display='block';
 document.getElementById('tav').textContent=[...nm][0];document.getElementById('tn').innerHTML=esc(nm)+(d.conv?.lecturer?`<span class="bd">${esc(lec(d.conv.lecturer))}</span>`:'');document.getElementById('tp').textContent=fmtPhone(p);
 const inf=[];if(d.conv?.mode&&d.conv.mode!=='anatoly')inf.push('מצב: '+esc(d.conv.mode==='ido'?'עידו (מכירות)':d.conv.mode));
 if(d.score)inf.push(`<b>ציון הבנה: ${d.score.score}/10</b>${d.score.suggest_reinforcement?' · <span style="color:#c0392b">כדאי להציע חיזוק</span>':''}`+(d.score.weaknesses?` · לחדד: ${esc(d.score.weaknesses)}`:''));
@@ -67,8 +70,19 @@ for(const f of d.feedback)inf.push(`משוב: ${f.satisfied===true?'👍 מרו�
 const ie=document.getElementById('info');ie.innerHTML=inf.join('<br/>');ie.style.display=inf.length?'block':'none';
 const ch=document.getElementById('chat');const atBottom=ch.scrollHeight-ch.scrollTop-ch.clientHeight<80;let h='',ld='';
 for(const m of d.msgs){const k=dkey(m.at);if(k!==ld){h+=`<div class="ds"><span>${dlabel(m.at)}</span></div>`;ld=k}
-h+=`<div class="row"><div class="b ${m.dir}">${body(m)}<div class="meta">${m.dir==='out'?tick(m.status)+' ':''}${hm(m.at)}${m.pending?' · ממתין לתשובה':''}</div></div></div>`}
+h+=`<div class="row"><div class="b ${m.dir}">${m.manual?'<div class="mn">✍️ נשלח ידנית</div>':''}${body(m)}<div class="meta">${m.dir==='out'?tick(m.status)+' ':''}${hm(m.at)}${m.pending?' · ממתין לתשובה':''}</div></div></div>`}
 ch.innerHTML=h||'<div class="ds"><span>אין הודעות</span></div>';if(!keep||atBottom)ch.scrollTop=ch.scrollHeight}
+const ERR={window_closed:'חלון 24 השעות סגור: התלמיד לא כתב ב-24 השעות האחרונות, ולכן אפשר לשלוח לו רק הודעת תבנית (Template) מאושרת.',bad_recipient:'המספר לא תקין או לא רשום בוואטסאפ.',empty:'אי אפשר לשלוח הודעה ריקה.',too_long:'ההודעה ארוכה מדי (עד 4096 תווים).',forbidden:'אסור לשלוח למספר הזה.',bad_phone:'מספר טלפון לא תקין.'};
+function showErr(t){const e=document.getElementById('cerr');e.textContent=t||'';e.style.display=t?'block':'none'}
+const ta=document.getElementById('ctext'),sb=document.getElementById('sendb');
+ta.oninput=()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,140)+'px'};
+async function sendMsg(){const t=ta.value.trim();if(!t||!cur||sb.disabled)return;sb.disabled=true;showErr('');const p=cur;
+try{const r=await fetch(API+'?k='+encodeURIComponent(K)+'&api=send',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({phone:p,text:t})});
+let d={};try{d=await r.json()}catch(e){}
+if(r.ok&&d.ok){ta.value='';ta.oninput();lastSig='';await openT(p,true);document.getElementById('chat').scrollTop=1e9;loadContacts()}
+else showErr(r.status===401?'אין הרשאה (קישור לא תקין).':(ERR[d.code]||('השליחה נכשלה: '+(d.error||('שגיאה '+r.status)))))}
+catch(e){showErr('השליחה נכשלה: אין חיבור לשרת.')}finally{sb.disabled=false;ta.focus()}}
+sb.onclick=sendMsg;ta.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMsg()}};
 document.getElementById('search').oninput=renderList;document.getElementById('back').onclick=()=>{document.body.classList.remove('open');cur=null;renderList()};
 loadContacts().then(()=>{const o=new URLSearchParams(location.search).get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},30000);
 </script></body></html>
