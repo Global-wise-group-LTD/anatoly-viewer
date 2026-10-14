@@ -83,7 +83,7 @@ if(r.ok&&d.ok){ta.value='';ta.oninput();lastSig='';await openT(p,true);document.
 else showErr(r.status===401?'אין הרשאה (קישור לא תקין).':(ERR[d.code]||('השליחה נכשלה: '+(d.error||('שגיאה '+r.status)))))}
 catch(e){showErr('השליחה נכשלה: אין חיבור לשרת.')}finally{sb.disabled=false;ta.focus()}}
 sb.onclick=sendMsg;ta.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMsg()}};
-{const sk=new URLSearchParams(location.search).get('sk');const t=document.getElementById('tabS');if(sk){t.href='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/shira-viewer?k='+encodeURIComponent(sk)}else{t.style.display='none'}}
+{const sk=new URLSearchParams(location.search).get('sk');const t=document.getElementById('tabS');if(sk){t.href='shira.html?k='+encodeURIComponent(sk)+'&ak='+encodeURIComponent(K)}else{t.style.display='none'}}
 document.getElementById('search').oninput=renderList;document.getElementById('back').onclick=()=>{document.body.classList.remove('open');cur=null;renderList()};
 loadContacts().then(()=>{const o=new URLSearchParams(location.search).get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},30000);
 </script></body></html>

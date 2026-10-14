@@ -39,7 +39,7 @@
 <script>
 
 const K=new URLSearchParams(location.search).get('k');const API='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/shira-viewer';const A=(q)=>fetch(API+'?k='+encodeURIComponent(K)+'&'+q).then(r=>r.json());
-{const ak=new URLSearchParams(location.search).get('ak');const t=document.getElementById('tabA');if(ak){t.href='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/chat-viewer?k='+encodeURIComponent(ak)}else{t.title='חסר פרמטר ak בקישור';t.style.opacity='.5'}}
+{const ak=new URLSearchParams(location.search).get('ak');const t=document.getElementById('tabA');if(ak){t.href='index.html?k='+encodeURIComponent(ak)+'&sk='+encodeURIComponent(K)}else{t.title='חסר פרמטר ak בקישור';t.style.opacity='.5'}}
 const TZ='Asia/Jerusalem';let contacts=[],cur=null,lastSig='';
 const esc=s=>(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtPhone=p=>p.startsWith('972')?'0'+p.slice(3).replace(/^(\d{2})(\d{3})(\d+)/,'$1-$2-$3'):p;
