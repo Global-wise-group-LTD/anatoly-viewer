@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="robots" content="noindex"/>
-<title>שירה · שיחות</title><style><![CDATA[
+<title>שירה · שיחות</title><style>
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;background:#d1d7db;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 #app{display:flex;flex:1;min-height:0;width:100%;max-width:1600px;margin:auto;background:#fff}
 #side{width:30%;min-width:300px;border-left:1px solid #e9edef;display:flex;flex-direction:column}
@@ -31,12 +31,12 @@
 #sendb{width:42px;height:42px;border-radius:50%;border:0;background:#00a884;color:#fff;font-size:18px;cursor:pointer;flex:none}#sendb:disabled{background:#8696a0;cursor:default}
 #cerr{display:none;background:#fde8e8;color:#b3261e;font-size:13px;padding:6px 14px}.mn{font-size:11px;color:#00796b;margin-bottom:2px}
 #tabs{display:flex;background:#00a884}#tabs a{flex:1;text-align:center;padding:10px 0;color:#e6fff8;text-decoration:none;font-weight:600;font-size:15px}#tabs a.on{background:#fff;color:#008069}
-]]></style></head><body><div id="tabs"><a id="tabA" href="#">אנטולי</a><a class="on" href="#">שירה</a></div><div id="app">
+</style></head><body><div id="tabs"><a id="tabA" href="#">אנטולי</a><a class="on" href="#">שירה</a></div><div id="app">
 <div id="side"><div class="hdr">💬 שירה · כל השיחות</div><input id="search" placeholder="חיפוש לפי שם או מספר"/><div id="list"></div></div>
 <div id="main"><div id="empty"><div style="font-size:40px">💬</div>בחר שיחה מהרשימה<div style="font-size:12px">מתעדכן אוטומטית כל 15 שניות</div></div>
 <div class="hdr" id="th" style="display:none"><button id="back">→</button><div class="av" id="tav"></div><div><div id="tn"></div><div class="ph" id="tp"></div></div></div>
 <div id="info"></div><div id="chat" style="display:none"></div><div id="cerr"></div></div></div>
-<script>//<![CDATA[
+<script>
 
 const K=new URLSearchParams(location.search).get('k');const API='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/shira-viewer';const A=(q)=>fetch(API+'?k='+encodeURIComponent(K)+'&'+q).then(r=>r.json());
 {const ak=new URLSearchParams(location.search).get('ak');const t=document.getElementById('tabA');if(ak){t.href='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/chat-viewer?k='+encodeURIComponent(ak)}else{t.title='חסר פרמטר ak בקישור';t.style.opacity='.5'}}
@@ -79,4 +79,4 @@ function showErr(){}
 document.getElementById('search').oninput=renderList;document.getElementById('back').onclick=()=>{document.body.classList.remove('open');cur=null;renderList()};
 loadContacts().then(()=>{const o=new URLSearchParams(location.search).get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},15000);
 
-//]]></script></body></html>
+</script></body></html>
