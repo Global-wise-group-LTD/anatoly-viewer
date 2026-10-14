@@ -31,7 +31,7 @@
 #cerr{display:none;background:#fde8e8;color:#b3261e;font-size:13px;padding:6px 14px}.mn{font-size:11px;color:#00796b;margin-bottom:2px}
 @media(max-width:760px){#side{width:100%;min-width:0}#main{display:none;width:100%}body.open #side{display:none}body.open #main{display:flex}#back{display:block}.b{max-width:85%}#chat{padding:12px 10px}}
 </style></head><body><div id="app">
-<div id="side"><div class="hdr">💬 אנטולי · כל השיחות</div><input id="search" placeholder="חיפוש לפי שם או מספר"/><div id="list"></div></div>
+<div id="side"><div class="hdr">💬 אנטולי · כל השיחות<a id="tabS" style="margin-inline-start:auto;font-size:13px;font-weight:400;color:#00a884;text-decoration:none;border:1px solid #00a884;border-radius:14px;padding:3px 10px">שירה ←</a></div><input id="search" placeholder="חיפוש לפי שם או מספר"/><div id="list"></div></div>
 <div id="main"><div id="empty"><div style="font-size:40px">💬</div>בחר שיחה מהרשימה<div style="font-size:12px">אפשר לכתוב לתלמיד מתוך השיחה. מתעדכן אוטומטית כל 30 שניות</div></div>
 <div class="hdr" id="th" style="display:none"><button id="back">→</button><div class="av" id="tav"></div><div><div id="tn"></div><div class="ph" id="tp"></div></div></div>
 <div id="info"></div><div id="chat" style="display:none"></div><div id="cerr"></div><div id="cmp"><textarea id="ctext" rows="1" placeholder="כתוב הודעה לתלמיד (תישלח מהמספר של אנטולי)"></textarea><button id="sendb" title="שלח">➤</button></div></div></div>
@@ -83,6 +83,7 @@ if(r.ok&&d.ok){ta.value='';ta.oninput();lastSig='';await openT(p,true);document.
 else showErr(r.status===401?'אין הרשאה (קישור לא תקין).':(ERR[d.code]||('השליחה נכשלה: '+(d.error||('שגיאה '+r.status)))))}
 catch(e){showErr('השליחה נכשלה: אין חיבור לשרת.')}finally{sb.disabled=false;ta.focus()}}
 sb.onclick=sendMsg;ta.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMsg()}};
+{const sk=new URLSearchParams(location.search).get('sk');const t=document.getElementById('tabS');if(sk){t.href='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/shira-viewer?k='+encodeURIComponent(sk)}else{t.style.display='none'}}
 document.getElementById('search').oninput=renderList;document.getElementById('back').onclick=()=>{document.body.classList.remove('open');cur=null;renderList()};
 loadContacts().then(()=>{const o=new URLSearchParams(location.search).get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},30000);
 </script></body></html>
