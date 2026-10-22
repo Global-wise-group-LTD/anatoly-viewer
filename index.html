@@ -31,11 +31,13 @@
 #cerr{display:none;background:#fde8e8;color:#b3261e;font-size:13px;padding:6px 14px}.mn{font-size:11px;color:#00796b;margin-bottom:2px}
 @media(max-width:760px){#side{width:100%;min-width:0}#main{display:none;width:100%}body.open #side{display:none}body.open #main{display:flex}#back{display:block}.b{max-width:85%}#chat{padding:12px 10px}}
 #cons{display:none;flex:1;overflow:auto;background:#fff;padding:12px 16px;direction:rtl}#cons table{border-collapse:collapse;width:100%;font-size:13px}#cons td,#cons th{border-bottom:1px solid #e9edef;padding:6px 8px;text-align:right}#cons tr.r{cursor:pointer}#cons tr.r:hover{background:#f5f6f6}#cons pre{white-space:pre-wrap;background:#f7f8fa;padding:10px;border-radius:8px;font:14px Segoe UI,Helvetica,Arial,sans-serif}#cons iframe{width:100%;height:420px;border:1px solid #e9edef;border-radius:8px}.mono{font-family:monospace;direction:ltr;font-size:12px;word-break:break-all}#consb{margin-inline-start:auto;background:#e7f3ff;color:#1a5fb4;border:0;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:13px}
+.ab{background:#e7f3ff;color:#1a5fb4;border:0;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:13px}.ab.on{background:#d9fdd3;color:#0b6b3a}#actor{width:110px;padding:4px 8px;border:1px solid #d1d7db;border-radius:8px;font-size:13px}#tact{margin-inline-start:auto;display:flex;gap:6px;flex-wrap:wrap}
+#adm{display:none;flex:1;overflow:auto;background:#fff;padding:12px 16px;direction:rtl}#adm textarea{width:100%;min-height:120px}#adm table{border-collapse:collapse;width:100%;font-size:13px}#adm td,#adm th{border-bottom:1px solid #e9edef;padding:5px 8px;text-align:right}
 </style></head><body><div id="app">
-<div id="side"><div class="hdr">💬 אנטולי · כל השיחות<button id="consb">📜 אישורי תקנון</button></div><input id="search" placeholder="חיפוש לפי שם או מספר"/><div id="list"></div></div>
+<div id="side"><div class="hdr">💬 אנטולי · כל השיחות<button id="consb">📜 אישורי תקנון</button></div><div class="hdr" style="height:auto;padding:6px 12px;flex-wrap:wrap;font-weight:400;font-size:13px">שם המבצע: <input id="actor" placeholder="השם שלך"/><button class="ab" id="bulkb">⭐ סימון ביקורות</button><button class="ab" id="statb">📊 סטטיסטיקה</button><button class="ab" id="logb">🧾 יומן פעולות</button></div><input id="search" placeholder="חיפוש לפי שם או מספר"/><div id="list"></div></div>
 <div id="main"><div id="empty"><div style="font-size:40px">💬</div>בחר שיחה מהרשימה<div style="font-size:12px">אפשר לכתוב לתלמיד מתוך השיחה. מתעדכן אוטומטית כל 30 שניות</div></div>
-<div class="hdr" id="th" style="display:none"><button id="back">→</button><div class="av" id="tav"></div><div><div id="tn"></div><div class="ph" id="tp"></div></div></div>
-<div id="info"></div><div id="chat" style="display:none"></div><div id="cons"></div><div id="cerr"></div><div id="cmp"><textarea id="ctext" rows="1" placeholder="כתוב הודעה לתלמיד (תישלח מהמספר של אנטולי)"></textarea><button id="sendb" title="שלח">➤</button></div></div></div>
+<div class="hdr" id="th" style="display:none"><button id="back">→</button><div class="av" id="tav"></div><div><div id="tn"></div><div class="ph" id="tp"></div></div><div id="tact"></div></div>
+<div id="info"></div><div id="chat" style="display:none"></div><div id="cons"></div><div id="adm"></div><div id="cerr"></div><div id="cmp"><textarea id="ctext" rows="1" placeholder="כתוב הודעה לתלמיד (תישלח מהמספר של אנטולי)"></textarea><button id="sendb" title="שלח">➤</button></div></div></div>
 <script>
 const K=new URLSearchParams(location.search).get('k');const API='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/chat-viewer';const A=(q)=>fetch(API+'?k='+encodeURIComponent(K)+'&'+q).then(r=>r.json());
 const TZ='Asia/Jerusalem';let contacts=[],cur=null,lastSig='';
@@ -50,7 +52,7 @@ const TYPES={image:'📷 תמונה',audio:'🎤 הודעה קולית',voice:'�
 function renderList(){const q=document.getElementById('search').value.trim().toLowerCase();
 document.getElementById('list').innerHTML=contacts.filter(c=>!q||(c.name||'').toLowerCase().includes(q)||c.phone.includes(q.replace(/^0/,''))||fmtPhone(c.phone).includes(q)).map(c=>{
 const nm=c.name||fmtPhone(c.phone);const pv=(c.lastDir==='out'?'✓ ':'')+(c.last&&!/^\[/.test(c.last)?c.last:(TYPES[c.lastType]||c.last||''));
-return `<div class="c ${cur===c.phone?'act':''}" data-p="${c.phone}"><div class="av">${esc([...nm][0])}</div><div class="ci"><div class="r1"><span class="nm">${esc(nm)}${c.lecturer?`<span class="bd">${esc(lec(c.lecturer))}</span>`:''}</span><span class="tm">${when(c.lastAt)}</span></div><div class="ph">${fmtPhone(c.phone)}</div><div class="r2"><span class="pv">${esc(pv)}</span>${c.pending?`<span class="un">${c.pending}</span>`:''}</div></div></div>`}).join('')||'<div style="padding:20px;color:#667781">אין תוצאות</div>';
+return `<div class="c ${cur===c.phone?'act':''}" data-p="${c.phone}"><div class="av">${esc([...nm][0])}</div><div class="ci"><div class="r1"><span class="nm">${esc(nm)}${c.lecturer?`<span class="bd">${esc(lec(c.lecturer))}</span>`:''}${c.review?' ⭐':''}${c.takeover?' ✋':''}${c.muted?' 🔇':''}</span><span class="tm">${when(c.lastAt)}</span></div><div class="ph">${fmtPhone(c.phone)}</div><div class="r2"><span class="pv">${esc(pv)}</span>${c.pending?`<span class="un">${c.pending}</span>`:''}</div></div></div>`}).join('')||'<div style="padding:20px;color:#667781">אין תוצאות</div>';
 document.querySelectorAll('.c').forEach(e=>e.onclick=()=>openT(e.dataset.p));}
 async function loadContacts(){try{contacts=await A('api=contacts');renderList()}catch(e){}}
 function tick(s){if(!s)return'<span class="tk">🕓</span>';if(s==='failed')return'<span class="tk failed">⚠ נכשל</span>';return`<span class="tk ${s}">${s==='sent'?'✓':'✓✓'}</span>`}
@@ -61,14 +63,14 @@ else if(m.type==='audio'||m.type==='voice'){if(!m.text)h+='<div class="it">[הו
 else if(m.type&&!['text','button','interactive','reaction'].includes(m.type)&&!m.text)h+=`<div class="it">[${TYPES[m.type]||m.type}]</div>`;
 if(m.type==='reaction')h+='תגובה: ';if(m.text)h+=esc(m.text);return h}
 async function openT(p,keep){hideCons();if(!keep){if(cur!==p){showErr('');ta.value=''}cur=p;lastSig='';document.body.classList.add('open');renderList()}
-const d=await A('api=thread&phone='+p);if(cur!==p)return;const sig=JSON.stringify(d.msgs.map(m=>[m.at,m.status]))+JSON.stringify(d.score)+d.feedback.length;if(sig===lastSig)return;lastSig=sig;
+const d=await A('api=thread&phone='+p);if(cur!==p)return;const sig=JSON.stringify(d.msgs.map(m=>[m.at,m.status]))+JSON.stringify(d.score)+d.feedback.length+JSON.stringify([d.review_left,d.review,d.admin]);if(sig===lastSig)return;lastSig=sig;
 const c=contacts.find(x=>x.phone===p)||{};const nm=c.name||d.conv?.name||fmtPhone(p);
 document.getElementById('empty').style.display='none';['th','chat','cmp'].forEach(i=>document.getElementById(i).style.display='flex');document.getElementById('chat').style.display='block';
 document.getElementById('tav').textContent=[...nm][0];document.getElementById('tn').innerHTML=esc(nm)+(d.conv?.lecturer?`<span class="bd">${esc(lec(d.conv.lecturer))}</span>`:'');document.getElementById('tp').textContent=fmtPhone(p);
 const inf=[];if(d.conv?.mode&&d.conv.mode!=='anatoly')inf.push('מצב: '+esc(d.conv.mode==='ido'?'עידו (מכירות)':d.conv.mode));
 if(d.score)inf.push(`<b>ציון הבנה: ${d.score.score}/10</b>${d.score.suggest_reinforcement?' · <span style="color:#c0392b">כדאי להציע חיזוק</span>':''}`+(d.score.weaknesses?` · לחדד: ${esc(d.score.weaknesses)}`:''));
 for(const f of d.feedback)inf.push(`משוב: ${f.satisfied===true?'👍 מרוצה':f.satisfied===false?'👎 לא מרוצה':''} ${esc(f.what_missing||'')} ${f.comment?'"'+esc(f.comment)+'"':''}`);
-const ie=document.getElementById('info');ie.innerHTML=inf.join('<br/>');ie.style.display=inf.length?'block':'none';
+renderActs(p,d);const ie=document.getElementById('info');ie.innerHTML=inf.join('<br/>');ie.style.display=inf.length?'block':'none';
 const ch=document.getElementById('chat');const atBottom=ch.scrollHeight-ch.scrollTop-ch.clientHeight<80;let h='',ld='';
 for(const m of d.msgs){const k=dkey(m.at);if(k!==ld){h+=`<div class="ds"><span>${dlabel(m.at)}</span></div>`;ld=k}
 h+=`<div class="row"><div class="b ${m.dir}">${m.manual?'<div class="mn">✍️ נשלח ידנית</div>':''}${body(m)}<div class="meta">${m.dir==='out'?tick(m.status)+' ':''}${hm(m.at)}${m.pending?' · ממתין לתשובה':''}</div></div></div>`}
@@ -88,7 +90,19 @@ document.getElementById('search').oninput=renderList;document.getElementById('ba
 loadContacts().then(()=>{const o=new URLSearchParams(location.search).get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},30000);
 
 const EV={template_sent:'נשלחה תבנית',approved:'✅ אישר'};
-function hideCons(){document.getElementById('cons').style.display='none'}
+function hideCons(){document.getElementById('cons').style.display='none';document.getElementById('adm').style.display='none'}
+const AC=document.getElementById('actor');AC.value=localStorage.getItem('actor')||'';AC.oninput=()=>localStorage.setItem('actor',AC.value.trim());
+function actor(){const a=AC.value.trim();if(!a){alert('יש למלא "שם המבצע" למעלה (נרשם ביומן)');AC.focus();return null}return a}
+async function post(api,b){const r=await fetch(API+'?k='+encodeURIComponent(K)+'&api='+api,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)});let d={};try{d=await r.json()}catch(e){}if(!r.ok||!d.ok){alert('הפעולה נכשלה: '+(d.error||r.status));return null}return d}
+function renderActs(p,d){const el=document.getElementById('tact');const on=d.review_left;
+el.innerHTML=`<button class="ab ${on?'on':''}" id="revb" title="${d.review?('סומן ע״י '+esc(d.review.marked_by)+' '+new Date(d.review.marked_at).toLocaleString('he-IL',{timeZone:TZ})):(on?'לפי ההערות':'')}">${on?'⭐ השאיר ביקורת ✓':'☆ השאיר ביקורת'}</button>`+(window.renderActs2?renderActs2(p,d):'');
+document.getElementById('revb').onclick=async()=>{const a=actor();if(!a)return;if(!confirm(on?'לבטל את הסימון "השאיר ביקורת"? אנטולי עלול לבקש ממנו ביקורת שוב.':'לסמן שהשאיר ביקורת? אנטולי לא יבקש ממנו ביקורת יותר.'))return;
+if(await post('review',{phones:[p],left:!on,actor:a})){lastSig='';openT(p,true);loadContacts()}};if(window.bindActs2)bindActs2(p,d)}
+document.getElementById('bulkb').onclick=()=>{cur=null;renderList();document.body.classList.add('open');['empty','th','chat','cmp','info','cons'].forEach(i=>document.getElementById(i).style.display='none');
+const el=document.getElementById('adm');el.style.display='block';el.innerHTML=`<h3>⭐ סימון מרובה: השאירו ביקורת בגוגל</h3><div>הדבק מספרים (שורה, רווח או פסיק ביניהם, 05x או 972x):</div><textarea id="bulkt"></textarea><div>הערה (לא חובה): <input id="bulkn" style="width:60%"/></div><p><button class="ab" id="bulkgo">סמן שהשאירו ביקורת</button> <button class="ab" id="bulkun">בטל סימון</button></p><div id="bulkr"></div>`;
+const go=async left=>{const a=actor();if(!a)return;const ph=document.getElementById('bulkt').value.split(/[\s,;]+/).filter(Boolean);if(!ph.length)return;
+const r=await post('review',{phones:ph,left,actor:a,note:document.getElementById('bulkn').value.trim()||null});if(r){document.getElementById('bulkr').textContent=`עודכנו ${r.count} מספרים`;loadContacts()}};
+document.getElementById('bulkgo').onclick=()=>go(true);document.getElementById('bulkun').onclick=()=>go(false)};
 async function showCons(){cur=null;renderList();document.body.classList.add('open');['empty','th','chat','cmp','info'].forEach(i=>document.getElementById(i).style.display='none');
 const el=document.getElementById('cons');el.style.display='block';el.innerHTML='טוען...';const d=await A('api=consents');
 el.innerHTML=`<h3>📜 אישורי תקנון</h3><div>${d.chain_ok?'🔒 שרשרת ה-hash תקינה':'⚠️ שרשרת ה-hash שבורה בשורה '+esc(String(d.broken_id))}</div><table><tr><th>טלפון</th><th>שם</th><th>תאריך ושעה</th><th>אירוע</th><th>payload</th><th>hash</th></tr>${(d.rows||[]).map(r=>`<tr class="r" data-id="${r.id}"><td class="ph">${fmtPhone(r.wa_id)}</td><td>${esc(r.name||'')}</td><td>${new Date(r.event_at).toLocaleString('he-IL',{timeZone:TZ})}</td><td>${EV[r.event]||esc(r.event)}</td><td>${esc(r.button_payload||'')}</td><td class="mono">${esc((r.row_hash||'').slice(0,12))}</td></tr>`).join('')||'<tr><td colspan="6">אין אישורים עדיין</td></tr>'}</table><div id="cdet"></div>`;
@@ -96,4 +110,44 @@ el.querySelectorAll('tr.r').forEach(t=>t.onclick=()=>showConsent(t.dataset.id))}
 async function showConsent(id){const r=await A('api=consent&id='+id);const e=document.getElementById('cdet');
 e.innerHTML=`<h3>${EV[r.event]||esc(r.event)} · ${fmtPhone(r.wa_id)} · ${new Date(r.event_at).toLocaleString('he-IL',{timeZone:TZ})}</h3><div><b>תבנית:</b> ${esc(r.template_name||'')} (${esc(r.template_version||'')})</div><div><b>הנוסח שנשלח בדיוק:</b></div><pre>${esc(r.sent_text||'—')}</pre><div><b>קישור:</b> <a href="${esc(r.terms_url||'')}" target="_blank" rel="noopener">${esc(r.terms_url||'')}</a></div><div><b>צילום התקנון ברגע האישור:</b></div>${r.snapshot_url?`<iframe sandbox="" src="${esc(r.snapshot_url)}"></iframe>`:'<div class="it">אין צילום</div>'}<div><b>sha256 של הצילום:</b> <span class="mono">${esc(r.terms_sha256||'—')}</span></div><div><b>wamid של לחיצת הכפתור:</b> <span class="mono">${esc(r.wamid||'—')}</span></div><div><b>hash של השורה:</b> <span class="mono">${esc(r.row_hash||'')}</span></div><div><b>hash קודם:</b> <span class="mono">${esc(r.prev_hash||'GENESIS')}</span></div>`;e.scrollIntoView()}
 document.getElementById('consb').onclick=showCons;
+
+const LECS=['Nadav','Matan','Tal','Elad','Yarin','Almog'];
+function renderActs2(p,d){const a=d.admin||{};const mu=a.muted_until&&new Date(a.muted_until)>new Date();
+return ` <button class="ab ${a.takeover?'on':''}" id="tkb">${a.takeover?'✋ בשליטה ידנית ('+esc(a.takeover_by||'')+') · שחרר':'✋ השתלט על השיחה'}</button>`+
+` <button class="ab ${mu?'on':''}" id="mub">${mu?'🔇 מושתק עד '+new Date(a.muted_until).toLocaleString('he-IL',{timeZone:TZ})+' · בטל':'🔇 השתק'}</button>`+
+` <button class="ab" id="ntb">📝 הערות${a.admin_notes||a.method_note?' •':''}</button>`}
+function bindActs2(p,d){const a=d.admin||{};const mu=a.muted_until&&new Date(a.muted_until)>new Date();
+const set=async patch=>{const ac=actor();if(!ac)return;if(await post('admin',{phone:p,actor:ac,patch})){lastSig='';openT(p,true);loadContacts()}};
+document.getElementById('tkb').onclick=()=>{if(confirm(a.takeover?'לשחרר? אנטולי יחזור לענות מההודעה הבאה.':'להשתלט? אנטולי יפסיק לענות עד שחרור (ההודעות עדיין נשמרות ומוצגות).'))set({takeover:!a.takeover})};
+document.getElementById('mub').onclick=()=>{if(mu){if(confirm('לבטל השתקה?'))set({muted_until:null});return}
+const v=prompt('להשתיק עד תאריך (YYYY-MM-DD), אנטולי לא יענה עד אז:',new Date(Date.now()+864e5).toLocaleDateString('en-CA',{timeZone:TZ}));if(!v)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){alert('תאריך לא תקין');return}set({muted_until:v+'T23:59:00+03:00'})};
+document.getElementById('ntb').onclick=()=>{hideCons();const el=document.getElementById('adm');['chat','cmp','info'].forEach(i=>document.getElementById(i).style.display='none');el.style.display='block';
+el.innerHTML=`<h3>📝 הערות פנימיות ותיקונים · ${fmtPhone(p)}</h3><div>הערות פנימיות (לא נשלחות לתלמיד, אנטולי מקבל אותן כהקשר):</div><textarea id="an">${esc(a.admin_notes||'')}</textarea>
+<div>תיקון שיטה (אנטולי מחויב לו):</div><textarea id="mn" style="min-height:60px">${esc(a.method_note||'')}</textarea>
+<div>מרצה: <select id="lc"><option value="">ללא שינוי</option>${LECS.map(l=>`<option value="${l}" ${d.conv?.lecturer===l?'selected':''}>${lec(l)}</option>`).join('')}</select> (נוכחי: ${esc(lec(d.conv?.lecturer)||'אין')})</div>
+<p><button class="ab" id="svn">שמור</button> <button class="ab" id="bkn">חזרה לשיחה</button></p>`;
+document.getElementById('bkn').onclick=()=>{el.style.display='none';lastSig='';openT(p,true);document.getElementById('chat').style.display='block';document.getElementById('cmp').style.display='flex'};
+document.getElementById('svn').onclick=async()=>{const patch={admin_notes:document.getElementById('an').value,method_note:document.getElementById('mn').value};const l=document.getElementById('lc').value;if(l&&l!==d.conv?.lecturer)patch.lecturer=l;await set(patch);document.getElementById('bkn').onclick()}}}
+function panel(){cur=null;renderList();document.body.classList.add('open');['empty','th','chat','cmp','info','cons'].forEach(i=>document.getElementById(i).style.display='none');const el=document.getElementById('adm');el.style.display='block';el.innerHTML='טוען...';return el}
+const ACC={legacy:'ותיק',new:'מנוי חדש',other:'אחר'};const dt=x=>x?new Date(x).toLocaleString('he-IL',{timeZone:TZ}):'';const dd=x=>x?new Date(x).toLocaleDateString('he-IL',{timeZone:TZ}):'';
+async function showStats(){const el=panel();const s=await A('api=stats');const r=s.ratings||{},ac=s.active||{},x=s.access||{};
+const conv=r.fives?Math.round(100*r.fives_left_review/r.fives):0;
+el.innerHTML=`<h3>📊 סטטיסטיקה</h3>
+<h4>דירוגים וביקורות</h4><div>דירגו: ${r.students_rated||0} · ממוצע: ${r.avg??'-'} · דירוג 5: ${r.fives||0} · מתוכם השאירו ביקורת: ${r.fives_left_review||0} (${conv}%) · סה״כ סומנו כהשאירו ביקורת: ${r.review_left_total||0}</div>
+<div>לפי דירוג: ${Object.entries(r.by_rating||{}).map(([k,v])=>k+': '+v).join(' · ')}</div>
+<h4>פעילות</h4><div>פעילים: יום ${ac.d1||0} · 7 ימים ${ac.d7||0} · 30 יום ${ac.d30||0} · שיחות: ${ac.conversations||0}</div>
+<table><tr><th>שבוע</th><th>נכנסות</th><th>יוצאות</th></tr>${(s.by_week||[]).map(w=>`<tr><td>${esc(w.wk)}</td><td>${w.msgs_in}</td><td>${w.msgs_out}</td></tr>`).join('')}</table>
+<details><summary>לפי יום (60 ימים)</summary><table><tr><th>יום</th><th>נכנסות</th><th>יוצאות</th><th>תלמידים</th></tr>${(s.by_day||[]).map(w=>`<tr><td>${esc(w.d)}</td><td>${w.msgs_in}</td><td>${w.msgs_out}</td><td>${w.students}</td></tr>`).join('')}</table></details>
+<h4>מרצים</h4><table><tr><th>מרצה</th><th>תלמידים</th><th>תשובות</th></tr>${(s.lecturers||[]).map(l=>`<tr><td>${esc(lec(l.lecturer))}</td><td>${l.n}</td><td>${l.answers??''}</td></tr>`).join('')}</table>
+<h4>גישה</h4><div>ותיקים: ${x.legacy||0} · מנויים חדשים: ${x.new||0}</div>
+<h4>אישורי תקנון: מי מחכה לתבנית</h4><table><tr><th>טלפון</th><th>שם</th><th>מועד תבנית</th><th>נשלחה</th><th>אישר</th></tr>${(s.terms||[]).map(t=>`<tr><td class="ph">${fmtPhone(t.wa_id)}</td><td>${esc(t.name||'')}</td><td>${esc(t.due||'')}</td><td>${dd(t.template_sent_at)}</td><td>${t.approved_at?'✅ '+dd(t.approved_at):'לא'}</td></tr>`).join('')}</table>
+<h4>משוב חלקי / לא מרוצה: סיבות</h4><table><tr><th>שם</th><th>תאריך</th><th>מה חסר</th><th>במילים שלו</th></tr>${(r.partial_reasons||[]).map(f=>`<tr><td>${esc(f.name||fmtPhone(f.wa_id))}</td><td>${dd(f.at)}</td><td>${esc(f.missing||'')}</td><td>${esc(f.comment||'')}</td></tr>`).join('')}</table>
+<h4>שימוש לפי מספר</h4><div>מתאריך <input type="date" id="uf"/> עד <input type="date" id="ut"/> גישה <select id="ua"><option value="all">הכול</option><option value="legacy">ותיק</option><option value="new">מנוי חדש</option><option value="other">אחר</option></select> סדר <select id="uo"><option value="desc">הכי פעיל קודם</option><option value="asc">הכי פחות פעיל קודם</option></select> <button class="ab" id="ug">הצג</button></div><div id="ur"></div>`;
+const lu=async()=>{const q=`api=usage&from=${uf.value}&to=${ut.value}&access=${ua.value}&order=${uo.value}`;const u=await A(q);
+document.getElementById('ur').innerHTML=`<table><tr><th>שם</th><th>מספר</th><th>גישה</th><th>שלח</th><th>אנטולי שלח</th><th>סה״כ</th><th>פנייה ראשונה</th><th>הודעה אחרונה</th></tr>${u.map(r=>`<tr class="r" data-p="${r.wa_id}" style="cursor:pointer"><td>${esc(r.name||'')}</td><td class="ph">${fmtPhone(r.wa_id)}</td><td>${ACC[r.access]||''}</td><td>${r.msgs_in}</td><td>${r.msgs_out}</td><td><b>${r.total}</b></td><td>${dd(r.first_contact)}</td><td>${dt(r.last_message)}</td></tr>`).join('')||'<tr><td colspan="8">אין נתונים</td></tr>'}</table>`;
+document.querySelectorAll('#ur tr.r').forEach(t=>t.onclick=()=>openT(t.dataset.p))};
+const uf=document.getElementById('uf'),ut=document.getElementById('ut'),ua=document.getElementById('ua'),uo=document.getElementById('uo');document.getElementById('ug').onclick=lu;lu()}
+async function showLog(){const el=panel();const l=await A('api=log');
+el.innerHTML=`<h3>🧾 יומן פעולות</h3><table><tr><th>מתי</th><th>מי</th><th>פעולה</th><th>מספר</th><th>לפני</th><th>אחרי</th></tr>${l.map(r=>`<tr><td>${dt(r.at)}</td><td>${esc(r.actor)}</td><td>${esc(r.action)}</td><td class="ph">${r.wa_id?fmtPhone(r.wa_id):''}</td><td class="mono">${esc(r.before?JSON.stringify(r.before):'')}</td><td class="mono">${esc(r.after?JSON.stringify(r.after):'')}</td></tr>`).join('')||'<tr><td colspan="6">אין פעולות</td></tr>'}</table>`}
+document.getElementById('statb').onclick=showStats;document.getElementById('logb').onclick=showLog;
 </script></body></html>
