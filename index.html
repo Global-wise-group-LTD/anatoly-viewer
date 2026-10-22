@@ -33,13 +33,21 @@
 #cons{display:none;flex:1;overflow:auto;background:#fff;padding:12px 16px;direction:rtl}#cons table{border-collapse:collapse;width:100%;font-size:13px}#cons td,#cons th{border-bottom:1px solid #e9edef;padding:6px 8px;text-align:right}#cons tr.r{cursor:pointer}#cons tr.r:hover{background:#f5f6f6}#cons pre{white-space:pre-wrap;background:#f7f8fa;padding:10px;border-radius:8px;font:14px Segoe UI,Helvetica,Arial,sans-serif}#cons iframe{width:100%;height:420px;border:1px solid #e9edef;border-radius:8px}.mono{font-family:monospace;direction:ltr;font-size:12px;word-break:break-all}#consb{margin-inline-start:auto;background:#e7f3ff;color:#1a5fb4;border:0;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:13px}
 .ab{background:#e7f3ff;color:#1a5fb4;border:0;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:13px}.ab.on{background:#d9fdd3;color:#0b6b3a}#actor{width:110px;padding:4px 8px;border:1px solid #d1d7db;border-radius:8px;font-size:13px}#tact{margin-inline-start:auto;display:flex;gap:6px;flex-wrap:wrap}
 #adm{display:none;flex:1;overflow:auto;background:#fff;padding:12px 16px;direction:rtl}#adm textarea{width:100%;min-height:120px}#adm table{border-collapse:collapse;width:100%;font-size:13px}#adm td,#adm th{border-bottom:1px solid #e9edef;padding:5px 8px;text-align:right}
+#mdl{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:99}#mdl>div{background:#fff;border-radius:10px;padding:16px;min-width:280px;max-width:90vw;direction:rtl;font-size:14px}#mdl input{width:100%;margin:10px 0;padding:7px;border:1px solid #d1d7db;border-radius:8px}#mdl p{text-align:left;margin:8px 0 0}
+body.embed .swb{display:none!important}
 </style></head><body><div id="app">
 <div id="side"><div class="hdr">💬 אנטולי · כל השיחות<button id="consb">📜 אישורי תקנון</button></div><div class="hdr" style="height:auto;padding:6px 12px;flex-wrap:wrap;font-weight:400;font-size:13px">שם המבצע: <input id="actor" placeholder="השם שלך"/><button class="ab" id="bulkb">⭐ סימון ביקורות</button><button class="ab" id="statb">📊 סטטיסטיקה</button><button class="ab" id="logb">🧾 יומן פעולות</button></div><input id="search" placeholder="חיפוש לפי שם או מספר"/><div id="list"></div></div>
 <div id="main"><div id="empty"><div style="font-size:40px">💬</div>בחר שיחה מהרשימה<div style="font-size:12px">אפשר לכתוב לתלמיד מתוך השיחה. מתעדכן אוטומטית כל 30 שניות</div></div>
 <div class="hdr" id="th" style="display:none"><button id="back">→</button><div class="av" id="tav"></div><div><div id="tn"></div><div class="ph" id="tp"></div></div><div id="tact"></div></div>
-<div id="info"></div><div id="chat" style="display:none"></div><div id="cons"></div><div id="adm"></div><div id="cerr"></div><div id="cmp"><textarea id="ctext" rows="1" placeholder="כתוב הודעה לתלמיד (תישלח מהמספר של אנטולי)"></textarea><button id="sendb" title="שלח">➤</button></div></div></div>
+<div id="info"></div><div id="chat" style="display:none"></div><div id="cons"></div><div id="adm"></div><div id="cerr"></div><div id="cmp"><textarea id="ctext" rows="1" placeholder="כתוב הודעה לתלמיד (תישלח מהמספר של אנטולי)"></textarea><button id="sendb" title="שלח">➤</button></div></div></div><div id="mdl"><div><div id="mdt"></div><input id="mdi" style="display:none"/><p><button class="ab" id="mdo">אישור</button> <button class="ab" id="mdc">ביטול</button></p></div></div>
 <script>
-const K=new URLSearchParams(location.search).get('k');const API='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/chat-viewer';const A=(q)=>fetch(API+'?k='+encodeURIComponent(K)+'&'+q).then(r=>r.json());
+const QS=new URLSearchParams(location.search);if(QS.get('embed')==='1')document.body.classList.add('embed');
+const ST={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+function modal(msg,{input=false,def='',cancel=true,type='text'}={}){return new Promise(res=>{const m=document.getElementById('mdl'),i=document.getElementById('mdi'),o=document.getElementById('mdo'),c=document.getElementById('mdc');
+document.getElementById('mdt').textContent=msg;i.style.display=input?'block':'none';i.type=type;i.value=def;c.style.display=cancel?'':'none';m.style.display='flex';if(input)setTimeout(()=>i.focus(),0);
+const done=v=>{m.style.display='none';o.onclick=c.onclick=i.onkeydown=null;res(v)};o.onclick=()=>done(input?i.value:true);c.onclick=()=>done(input?null:false);i.onkeydown=e=>{if(e.key==='Enter')o.onclick()}})}
+const uiAlert=m=>modal(m,{cancel:false}),uiConfirm=m=>modal(m),uiPrompt=(m,d)=>modal(m,{input:true,def:d||''});
+let K=QS.get('k')||ST.get('vk');const API='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/chat-viewer';const A=(q)=>fetch(API+'?k='+encodeURIComponent(K)+'&'+q).then(r=>r.json());
 const TZ='Asia/Jerusalem';let contacts=[],cur=null,lastSig='';
 const esc=s=>(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtPhone=p=>p.startsWith('972')?'0'+p.slice(3).replace(/^(\d{2})(\d{3})(\d+)/,'$1-$2-$3'):p;
@@ -87,16 +95,20 @@ else showErr(r.status===401?'אין הרשאה (קישור לא תקין).':(ERR
 catch(e){showErr('השליחה נכשלה: אין חיבור לשרת.')}finally{sb.disabled=false;ta.focus()}}
 sb.onclick=sendMsg;ta.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMsg()}};
 document.getElementById('search').oninput=renderList;document.getElementById('back').onclick=()=>{document.body.classList.remove('open');cur=null;renderList()};
-loadContacts().then(()=>{const o=new URLSearchParams(location.search).get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},30000);
+async function boot(){while(!K){const v=await modal('הזן את מפתח הצפייה (נשמר בדפדפן הזה אם אפשר):',{input:true,cancel:false,type:'password'});if(v&&v.trim())K=v.trim()}
+const t=await fetch(API+'?k='+encodeURIComponent(K)+'&api=thread&phone=0').catch(()=>null);if(t&&t.status===401){ST.del('vk');K=null;await uiAlert('המפתח לא תקין, נסה שוב.');return boot()}
+if(!QS.get('k'))ST.set('vk',K);
+loadContacts().then(()=>{const o=QS.get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},30000)}
+boot();
 
 const EV={template_sent:'נשלחה תבנית',approved:'✅ אישר'};
 function hideCons(){document.getElementById('cons').style.display='none';document.getElementById('adm').style.display='none'}
-const AC=document.getElementById('actor');AC.value=localStorage.getItem('actor')||'';AC.oninput=()=>localStorage.setItem('actor',AC.value.trim());
-function actor(){const a=AC.value.trim();if(!a){alert('יש למלא "שם המבצע" למעלה (נרשם ביומן)');AC.focus();return null}return a}
-async function post(api,b){const r=await fetch(API+'?k='+encodeURIComponent(K)+'&api='+api,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)});let d={};try{d=await r.json()}catch(e){}if(!r.ok||!d.ok){alert('הפעולה נכשלה: '+(d.error||r.status));return null}return d}
+const AC=document.getElementById('actor');AC.value=ST.get('actor')||'';AC.oninput=()=>ST.set('actor',AC.value.trim());
+function actor(){const a=AC.value.trim();if(!a){uiAlert('יש למלא "שם המבצע" למעלה (נרשם ביומן)').then(()=>AC.focus());return null}return a}
+async function post(api,b){const r=await fetch(API+'?k='+encodeURIComponent(K)+'&api='+api,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)});let d={};try{d=await r.json()}catch(e){}if(!r.ok||!d.ok){uiAlert('הפעולה נכשלה: '+(d.error||r.status));return null}return d}
 function renderActs(p,d){const el=document.getElementById('tact');const on=d.review_left;
 el.innerHTML=`<button class="ab ${on?'on':''}" id="revb" title="${d.review?('סומן ע״י '+esc(d.review.marked_by)+' '+new Date(d.review.marked_at).toLocaleString('he-IL',{timeZone:TZ})):(on?'לפי ההערות':'')}">${on?'⭐ השאיר ביקורת ✓':'☆ השאיר ביקורת'}</button>`+(window.renderActs2?renderActs2(p,d):'');
-document.getElementById('revb').onclick=async()=>{const a=actor();if(!a)return;if(!confirm(on?'לבטל את הסימון "השאיר ביקורת"? אנטולי עלול לבקש ממנו ביקורת שוב.':'לסמן שהשאיר ביקורת? אנטולי לא יבקש ממנו ביקורת יותר.'))return;
+document.getElementById('revb').onclick=async()=>{const a=actor();if(!a)return;if(!await uiConfirm(on?'לבטל את הסימון "השאיר ביקורת"? אנטולי עלול לבקש ממנו ביקורת שוב.':'לסמן שהשאיר ביקורת? אנטולי לא יבקש ממנו ביקורת יותר.'))return;
 if(await post('review',{phones:[p],left:!on,actor:a})){lastSig='';openT(p,true);loadContacts()}};if(window.bindActs2)bindActs2(p,d)}
 document.getElementById('bulkb').onclick=()=>{cur=null;renderList();document.body.classList.add('open');['empty','th','chat','cmp','info','cons'].forEach(i=>document.getElementById(i).style.display='none');
 const el=document.getElementById('adm');el.style.display='block';el.innerHTML=`<h3>⭐ סימון מרובה: השאירו ביקורת בגוגל</h3><div>הדבק מספרים (שורה, רווח או פסיק ביניהם, 05x או 972x):</div><textarea id="bulkt"></textarea><div>הערה (לא חובה): <input id="bulkn" style="width:60%"/></div><p><button class="ab" id="bulkgo">סמן שהשאירו ביקורת</button> <button class="ab" id="bulkun">בטל סימון</button></p><div id="bulkr"></div>`;
@@ -118,9 +130,9 @@ return ` <button class="ab ${a.takeover?'on':''}" id="tkb">${a.takeover?'✋ ב�
 ` <button class="ab" id="ntb">📝 הערות${a.admin_notes||a.method_note?' •':''}</button>`}
 function bindActs2(p,d){const a=d.admin||{};const mu=a.muted_until&&new Date(a.muted_until)>new Date();
 const set=async patch=>{const ac=actor();if(!ac)return;if(await post('admin',{phone:p,actor:ac,patch})){lastSig='';openT(p,true);loadContacts()}};
-document.getElementById('tkb').onclick=()=>{if(confirm(a.takeover?'לשחרר? אנטולי יחזור לענות מההודעה הבאה.':'להשתלט? אנטולי יפסיק לענות עד שחרור (ההודעות עדיין נשמרות ומוצגות).'))set({takeover:!a.takeover})};
-document.getElementById('mub').onclick=()=>{if(mu){if(confirm('לבטל השתקה?'))set({muted_until:null});return}
-const v=prompt('להשתיק עד תאריך (YYYY-MM-DD), אנטולי לא יענה עד אז:',new Date(Date.now()+864e5).toLocaleDateString('en-CA',{timeZone:TZ}));if(!v)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){alert('תאריך לא תקין');return}set({muted_until:v+'T23:59:00+03:00'})};
+document.getElementById('tkb').onclick=async()=>{if(await uiConfirm(a.takeover?'לשחרר? אנטולי יחזור לענות מההודעה הבאה.':'להשתלט? אנטולי יפסיק לענות עד שחרור (ההודעות עדיין נשמרות ומוצגות).'))set({takeover:!a.takeover})};
+document.getElementById('mub').onclick=async()=>{if(mu){if(await uiConfirm('לבטל השתקה?'))set({muted_until:null});return}
+const v=await uiPrompt('להשתיק עד תאריך (YYYY-MM-DD), אנטולי לא יענה עד אז:',new Date(Date.now()+864e5).toLocaleDateString('en-CA',{timeZone:TZ}));if(!v)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){uiAlert('תאריך לא תקין');return}set({muted_until:v+'T23:59:00+03:00'})};
 document.getElementById('ntb').onclick=()=>{hideCons();const el=document.getElementById('adm');['chat','cmp','info'].forEach(i=>document.getElementById(i).style.display='none');el.style.display='block';
 el.innerHTML=`<h3>📝 הערות פנימיות ותיקונים · ${fmtPhone(p)}</h3><div>הערות פנימיות (לא נשלחות לתלמיד, אנטולי מקבל אותן כהקשר):</div><textarea id="an">${esc(a.admin_notes||'')}</textarea>
 <div>תיקון שיטה (אנטולי מחויב לו):</div><textarea id="mn" style="min-height:60px">${esc(a.method_note||'')}</textarea>
