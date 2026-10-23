@@ -47,7 +47,7 @@ function modal(msg,{input=false,def='',cancel=true,type='text'}={}){return new P
 document.getElementById('mdt').textContent=msg;i.style.display=input?'block':'none';i.type=type;i.value=def;c.style.display=cancel?'':'none';m.style.display='flex';if(input)setTimeout(()=>i.focus(),0);
 const done=v=>{m.style.display='none';o.onclick=c.onclick=i.onkeydown=null;res(v)};o.onclick=()=>done(input?i.value:true);c.onclick=()=>done(input?null:false);i.onkeydown=e=>{if(e.key==='Enter')o.onclick()}})}
 const uiAlert=m=>modal(m,{cancel:false}),uiConfirm=m=>modal(m),uiPrompt=(m,d)=>modal(m,{input:true,def:d||''});
-let K=QS.get('k')||ST.get('vk');const API='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/chat-viewer';const A=(q)=>fetch(API+'?k='+encodeURIComponent(K)+'&'+q).then(r=>r.json());
+const EMB=QS.get('embed')==='1',PO='https://fb-dashboard-one.vercel.app';let PK=false;let K=QS.get('k')||(EMB?null:ST.get('vk'));const API='https://gcmhtbbmjhkvqdvguhkh.supabase.co/functions/v1/chat-viewer';const A=(q)=>fetch(API+'?k='+encodeURIComponent(K)+'&'+q).then(r=>r.json());
 const TZ='Asia/Jerusalem';let contacts=[],cur=null,lastSig='';
 const esc=s=>(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtPhone=p=>p.startsWith('972')?'0'+p.slice(3).replace(/^(\d{2})(\d{3})(\d+)/,'$1-$2-$3'):p;
@@ -95,9 +95,12 @@ else showErr(r.status===401?'אין הרשאה (קישור לא תקין).':(ERR
 catch(e){showErr('השליחה נכשלה: אין חיבור לשרת.')}finally{sb.disabled=false;ta.focus()}}
 sb.onclick=sendMsg;ta.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMsg()}};
 document.getElementById('search').oninput=renderList;document.getElementById('back').onclick=()=>{document.body.classList.remove('open');cur=null;renderList()};
-async function boot(){while(!K){const v=await modal('הזן את מפתח הצפייה (נשמר בדפדפן הזה אם אפשר):',{input:true,cancel:false,type:'password'});if(v&&v.trim())K=v.trim()}
-const t=await fetch(API+'?k='+encodeURIComponent(K)+'&api=thread&phone=0').catch(()=>null);if(t&&t.status===401){ST.del('vk');K=null;await uiAlert('המפתח לא תקין, נסה שוב.');return boot()}
-if(!QS.get('k'))ST.set('vk',K);
+function parentKey(ms){return new Promise(res=>{if(window.parent===window)return res(null);let done=false;const h=e=>{if(e.origin!==PO||e.source!==window.parent)return;const d=e.data;if(!d||d.type!=='wise-key'||typeof d.k!=='string'||!d.k.trim())return;done=true;window.removeEventListener('message',h);res(d.k.trim())};
+window.addEventListener('message',h);try{window.parent.postMessage({type:'wise-key-request',page:'anatoly'},PO)}catch(e){}setTimeout(()=>{if(!done){window.removeEventListener('message',h);res(null)}},8000)})}
+async function boot(){if(!K&&EMB&&!PK){PK=true;const pk=await parentKey();if(pk){K=pk;PK='ok'}else await uiAlert('לא התקבל מפתח מהדשבורד (תם הזמן). אפשר להזין מפתח ידנית.')}
+while(!K){const v=await modal('הזן את מפתח הצפייה (נשמר בדפדפן הזה אם אפשר):',{input:true,cancel:false,type:'password'});if(v&&v.trim())K=v.trim()}
+const t=await fetch(API+'?k='+encodeURIComponent(K)+'&api=thread&phone=0').catch(()=>null);if(t&&t.status===401){if(PK==='ok'){K=null;PK=true;await uiAlert('המפתח שהתקבל מהדשבורד לא תקין.');return boot()}ST.del('vk');K=null;await uiAlert('המפתח לא תקין, נסה שוב.');return boot()}
+if(!QS.get('k')&&PK!=='ok')ST.set('vk',K);
 loadContacts().then(()=>{const o=QS.get('c');if(o)openT(o)});setInterval(()=>{loadContacts();if(cur)openT(cur,true)},30000)}
 boot();
 
